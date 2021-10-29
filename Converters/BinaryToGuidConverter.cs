@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace GuidToBase64.Converters
 {
@@ -10,6 +11,10 @@ namespace GuidToBase64.Converters
 		{
 			try
 			{
+				var match = _base64GuidRegex.Match(input);
+				if (!match.Success) return null;
+
+				input = match.Value;
 				var binary = Convert.FromBase64String(input);
 				var guid = new Guid(binary);
 				return guid.ToString();
@@ -19,5 +24,7 @@ namespace GuidToBase64.Converters
 				return null;
 			}
 		}
+
+		private readonly Regex _base64GuidRegex = new(@"[0-9A-Za-z\/]{22}==");
 	}
 }
