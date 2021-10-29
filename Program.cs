@@ -25,7 +25,8 @@ namespace GuidToBase64
 
 				if (result == null) break;
 
-				Console.WriteLine($"{usedConverter.OutputTypeName}: {result}");
+				TextCopy.ClipboardService.SetText(result);
+				Console.WriteLine($"{usedConverter.OutputTypeName}: {result} (copied to clipboard)");
 			}
 		}
 
