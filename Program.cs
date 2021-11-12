@@ -17,13 +17,17 @@ namespace GuidToBase64
 			{
 				Console.Write(promptString);
 				var input = Console.ReadLine();
-				if (input == null) break;
+				if (string.IsNullOrEmpty(input)) break;
 
 				var (result, usedConverter) = converters
 					.Select(converter => (Result: converter.TryParseInput(input), Converter: converter))
 					.FirstOrDefault(x => x.Result != null);
 
-				if (result == null) break;
+				if (result == null)
+				{
+					Console.WriteLine("Could not convert entered data! Enter empty string to quit.");
+					continue;
+				}
 
 				TextCopy.ClipboardService.SetText(result);
 				Console.WriteLine($"{usedConverter.OutputTypeName}: {result} (copied to clipboard)");
