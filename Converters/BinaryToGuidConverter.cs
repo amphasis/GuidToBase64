@@ -25,6 +25,6 @@ namespace GuidToBase64.Converters
 			}
 		}
 
-		private readonly Regex _base64GuidRegex = new(@"[0-9A-Za-z\/]{22}==");
+		private readonly Regex _base64GuidRegex = new(@"[0-9A-Za-z+\/]{22}==");
 	}
 }
