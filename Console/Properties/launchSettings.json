@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "GuidToBase64": {
+    "Console": {
       "commandName": "Project",
       "commandLineArgs": "-q"
     }
