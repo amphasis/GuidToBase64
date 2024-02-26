@@ -4,7 +4,7 @@ using MongoConverter.Services.Converters;
 
 namespace MongoConverter.Console
 {
-	class Program
+	public static class Program
 	{
 		static void Main(string[] args)
 		{

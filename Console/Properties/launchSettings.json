@@ -2,6 +2,9 @@
   "profiles": {
     "Console": {
       "commandName": "Project",
+    },
+    "Quiet": {
+      "commandName": "Project",
       "commandLineArgs": "-q"
     }
   }
