@@ -16,12 +16,14 @@ internal static class Program
 
 		using var icon = new NotifyIcon();
 		icon.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+		icon.Text = "Convert MongoDB GUID/BinData";
 
 		icon.ContextMenuStrip = new ContextMenuStrip
 		{
 			Items =
 			{
-				new ToolStripMenuItem("Convert clipboard content", null, ConvertClipboardContent),
+				// ReSharper disable once AccessToDisposedClosure
+				new ToolStripMenuItem("Convert clipboard content", null, (_, _) => ConvertClipboardContent(icon)),
 				new ToolStripMenuItem("Exit", null, (_, _) => { Application.Exit(); }),
 			}
 		};
@@ -31,7 +33,7 @@ internal static class Program
 		Application.Run();
 	}
 
-	private static void ConvertClipboardContent(object? sender, EventArgs eventArgs)
+	private static void ConvertClipboardContent(NotifyIcon icon)
 	{
 		var clipboardText = TextCopy.ClipboardService.GetText();
 
@@ -46,6 +48,18 @@ internal static class Program
 			.JoinLines();
 
 		TextCopy.ClipboardService.SetText(convertedText);
+
+		var tipText = convertedText.Length == 0
+			? "(Empty content)"
+			: convertedText.Length > MaxToolTipLength
+				? string.Concat(convertedText.AsSpan(0, MaxToolTipLength), "...")
+				: convertedText;
+
+		icon.ShowBalloonTip(
+			timeout: BalloonTimeout.Milliseconds,
+			tipTitle: "Clipboard content converted",
+			tipText: tipText,
+			ToolTipIcon.Info);
 	}
 
 	private static string TryConvertLine(string line)
@@ -64,4 +78,7 @@ internal static class Program
 
 	private static readonly char[] LineSeparators = ['\r', '\n'];
 	private static readonly IReadOnlyCollection<IConverter> Converters = Services.Converters.Converters.Get();
+	private static readonly TimeSpan BalloonTimeout = TimeSpan.FromSeconds(5);
+
+	private const int MaxToolTipLength = 128;
 }
