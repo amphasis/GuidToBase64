@@ -7,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>converter.ico</ApplicationIcon>
+    <AssemblyTitle>MongoDB GUID/BinData Converter</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>
