@@ -22,15 +22,15 @@ internal static class Program
 		var convertCommand = new ConvertClipboardCommand(icon, Converters.Get());
 
 		icon.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-		icon.Text = "Convert MongoDB GUID/BinData";
+		icon.Text = "MongoDB GUID/BinData Converter";
 
 		icon.ContextMenuStrip = new ContextMenuStrip
 		{
 			Items =
 			{
 				// ReSharper disable once AccessToDisposedClosure
-				new ToolStripMenuItem("Convert clipboard content") {Command = convertCommand, ShortcutKeys = hotkey},
-				new ToolStripMenuItem("Exit", null, (_, _) => { Application.Exit(); }),
+				new ToolStripMenuItem("Convert Clipboard") {Command = convertCommand, ShortcutKeys = hotkey},
+				new ToolStripMenuItem("Exit", null, (_, _) => Application.Exit()),
 			}
 		};
 

@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Text;
+using System.Windows.Input;
 using MongoConverter.Services.Converters;
 
 namespace MongoConverter.SystemTray;
@@ -13,6 +14,8 @@ internal sealed class ConvertClipboardCommand : ICommand
 		_converters = converters;
 	}
 
+	public event EventHandler? CanExecuteChanged;
+
 	public bool CanExecute(object? parameter)
 	{
 		return true;
@@ -21,56 +24,103 @@ internal sealed class ConvertClipboardCommand : ICommand
 	public void Execute(object? parameter)
 	{
 		var clipboardText = TextCopy.ClipboardService.GetText();
+		var sourceLines = SplitLines(clipboardText);
 
-		if (string.IsNullOrWhiteSpace(clipboardText))
+		if (sourceLines.Count == 0)
 		{
 			return;
 		}
 
-		var convertedText = ConvertLines(clipboardText);
-		TextCopy.ClipboardService.SetText(convertedText);
-		ShowTooltip(convertedText);
-	}
+		var usageCountByConverter = _converters.ToDictionary(x => x, _ => 0);
+		var convertedLines = new StringBuilder();
 
-	public event EventHandler? CanExecuteChanged;
-
-	private string ConvertLines(string source)
-	{
-		var sourceLines = source.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
-		var convertedLines = sourceLines.Select(TryConvertLine);
-
-		return string.Join(Environment.NewLine, convertedLines);
-
-		string TryConvertLine(string line)
+		foreach (var sourceLine in sourceLines)
 		{
-			var convertedLine = _converters
-				.Select(converter => converter.TryParseInput(line))
-				.FirstOrDefault(converted => converted != null);
+			var conversionResult = _converters
+				.Select(converter => (Line: converter.TryParseInput(sourceLine), Converter: converter))
+				.FirstOrDefault(result => result.Line != null);
 
-			return convertedLine ?? line;
+			if (conversionResult.Line == null)
+			{
+				convertedLines.AppendLine(sourceLine);
+				continue;
+			}
+
+			convertedLines.AppendLine(conversionResult.Line);
+			usageCountByConverter[conversionResult.Converter] += 1;
 		}
-	}
 
-	private void ShowTooltip(string convertedText)
-	{
-		var tipText = convertedText.Length == 0
-			? "(Empty content)"
-			: convertedText.Length > MaxToolTipLength
-				? string.Concat(convertedText.AsSpan(0, MaxToolTipLength), "...")
-				: convertedText;
+		var totalLinesConverted = usageCountByConverter.Sum(x => x.Value);
+
+		if (totalLinesConverted == 0)
+		{
+			_notifyIcon.ShowBalloonTip(
+				timeout: BalloonTimeout.Milliseconds,
+				tipTitle: "Couldn't convert clipboard content",
+				tipText: $"No convertible strings out of {sourceLines.Count} lines of text was found.",
+				ToolTipIcon.Info);
+
+			return;
+		}
+
+		var tipText = GetTipText(usageCountByConverter);
 
 		_notifyIcon.ShowBalloonTip(
 			timeout: BalloonTimeout.Milliseconds,
-			tipTitle: "Clipboard content converted",
+			tipTitle: $"Converted {totalLinesConverted} lines out of {sourceLines.Count}",
 			tipText: tipText,
 			ToolTipIcon.Info);
+
+		TextCopy.ClipboardService.SetText(convertedLines.ToString());
+	}
+
+	private static List<string> SplitLines(string? source)
+	{
+		if (source == null)
+		{
+			return [];
+		}
+
+		using var reader = new StringReader(source);
+		var lines = new List<string>();
+
+		while (true)
+		{
+			var line = reader.ReadLine();
+
+			if (line == null)
+			{
+				break;
+			}
+
+			lines.Add(line);
+		}
+
+		return lines;
+	}
+
+	private static string GetTipText(IReadOnlyDictionary<IConverter, int> usageCountByConverter)
+	{
+		var conversionStatistics = usageCountByConverter
+			.Where(x => x.Value > 0)
+			.OrderByDescending(x => x.Value)
+			.ToArray();
+
+		if (conversionStatistics.Length == 1)
+		{
+			var converter = conversionStatistics[0].Key;
+			return $"{converter.InputTypeName} to {converter.OutputTypeName}";
+		}
+
+		var formattedStatisticsItems = conversionStatistics.Select(x => x.Value == 1
+			? $"{x.Value} line {x.Key.InputTypeName} to {x.Key.OutputTypeName}"
+			: $"{x.Value} lines {x.Key.InputTypeName} to {x.Key.OutputTypeName}");
+
+		return string.Join(Environment.NewLine, formattedStatisticsItems);
 	}
 
 	private readonly NotifyIcon _notifyIcon;
 	private readonly IReadOnlyCollection<IConverter> _converters;
 
-	private static readonly char[] LineSeparators = ['\r', '\n'];
 	private static readonly TimeSpan BalloonTimeout = TimeSpan.FromSeconds(5);
-
-	private const int MaxToolTipLength = 128;
 }
