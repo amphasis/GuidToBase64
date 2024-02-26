@@ -4,4 +4,8 @@
     <AssemblyName>MongoConverter.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>MongoConverter.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>$(MSBuildThisFileDirectory)bin/$(Configuration)</OutputPath>
+  </PropertyGroup>
 </Project>
