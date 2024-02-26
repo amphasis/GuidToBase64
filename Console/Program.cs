@@ -1,22 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using GuidToBase64.Converters;
+using MongoConverter.Services.Converters;
 
-namespace GuidToBase64
+namespace MongoConverter.Console
 {
 	class Program
 	{
 		static void Main(string[] args)
 		{
-			var converters = GetConverters();
+			var isQuietMode = args.Any(x => x == "-q");
+
+			var converters = Converters.Get();
 			var promptString = ComposePromptString(converters.Select(x => x.InputTypeName));
 
 			while (true)
 			{
-				Console.Write(promptString);
-				var input = Console.ReadLine();
+				if (!isQuietMode)
+				{
+					System.Console.Write(promptString);
+				}
+
+				var input = System.Console.ReadLine();
 				if (string.IsNullOrEmpty(input)) break;
 
 				var (result, usedConverter) = converters
@@ -25,24 +29,20 @@ namespace GuidToBase64
 
 				if (result == null)
 				{
-					Console.WriteLine("Could not convert entered data! Enter empty string to quit.");
+					System.Console.WriteLine("Could not convert entered data! Enter empty string to quit.");
 					continue;
 				}
 
-				TextCopy.ClipboardService.SetText(result);
-				Console.WriteLine($"{usedConverter.OutputTypeName}: {result} (copied to clipboard)");
+				if (isQuietMode)
+				{
+					System.Console.WriteLine(result);
+				}
+				else
+				{
+					TextCopy.ClipboardService.SetText(result);
+					System.Console.WriteLine($"{usedConverter.OutputTypeName}: {result} (copied to clipboard)");
+				}
 			}
-		}
-
-		private static IReadOnlyCollection<IConverter> GetConverters()
-		{
-			var allTypes = Assembly.GetExecutingAssembly().DefinedTypes
-				.Where(typeInfo => typeInfo.ImplementedInterfaces.Contains(typeof(IConverter)))
-				.Select(typeInfo => Activator.CreateInstance(typeInfo.AsType()))
-				.Cast<IConverter>()
-				.ToArray();
-
-			return allTypes;
 		}
 
 		private static object ComposePromptString(IEnumerable<string> inputTypeNames)

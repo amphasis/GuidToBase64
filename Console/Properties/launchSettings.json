@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GuidToBase64": {
+      "commandName": "Project",
+      "commandLineArgs": "-q"
+    }
+  }
+}

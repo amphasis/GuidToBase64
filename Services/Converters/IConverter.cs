@@ -1,4 +1,4 @@
-﻿namespace GuidToBase64.Converters
+﻿namespace MongoConverter.Services.Converters
 {
 	public interface IConverter
 	{

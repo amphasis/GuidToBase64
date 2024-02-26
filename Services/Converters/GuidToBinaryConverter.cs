@@ -1,7 +1,6 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
-namespace GuidToBase64.Converters
+namespace MongoConverter.Services.Converters
 {
 	public class GuidToBinaryConverter : IConverter
 	{
