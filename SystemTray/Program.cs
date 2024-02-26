@@ -1,4 +1,6 @@
 using MongoConverter.Services.Converters;
+using NHotkey;
+using NHotkey.WindowsForms;
 
 namespace MongoConverter.SystemTray;
 
@@ -10,11 +12,15 @@ internal static class Program
 	[STAThread]
 	public static void Main()
 	{
+		var hotkey = Keys.Z | Keys.Control | Keys.Alt | Keys.Shift;
+
 		// To customize application configuration such as set high DPI settings or default font,
 		// see https://aka.ms/applicationconfiguration.
 		ApplicationConfiguration.Initialize();
 
 		using var icon = new NotifyIcon();
+		var convertCommand = new ConvertClipboardCommand(icon, Converters.Get());
+
 		icon.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 		icon.Text = "Convert MongoDB GUID/BinData";
 
@@ -23,62 +29,32 @@ internal static class Program
 			Items =
 			{
 				// ReSharper disable once AccessToDisposedClosure
-				new ToolStripMenuItem("Convert clipboard content", null, (_, _) => ConvertClipboardContent(icon)),
+				new ToolStripMenuItem("Convert clipboard content") {Command = convertCommand, ShortcutKeys = hotkey},
 				new ToolStripMenuItem("Exit", null, (_, _) => { Application.Exit(); }),
 			}
 		};
 
 		icon.Visible = true;
 
-		Application.Run();
-	}
+		var hotkeyName = $"ConvertCommand{Guid.NewGuid()}";
 
-	private static void ConvertClipboardContent(NotifyIcon icon)
-	{
-		var clipboardText = TextCopy.ClipboardService.GetText();
-
-		if (clipboardText == null)
+		try
 		{
-			return;
+			HotkeyManager.Current.AddOrReplace(hotkeyName, hotkey, HotkeyHandler);
+			Application.Run();
+		}
+		finally
+		{
+			HotkeyManager.Current.Remove(hotkeyName);
 		}
 
-		var convertedText = clipboardText
-			.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries)
-			.Select(TryConvertLine)
-			.JoinLines();
-
-		TextCopy.ClipboardService.SetText(convertedText);
-
-		var tipText = convertedText.Length == 0
-			? "(Empty content)"
-			: convertedText.Length > MaxToolTipLength
-				? string.Concat(convertedText.AsSpan(0, MaxToolTipLength), "...")
-				: convertedText;
-
-		icon.ShowBalloonTip(
-			timeout: BalloonTimeout.Milliseconds,
-			tipTitle: "Clipboard content converted",
-			tipText: tipText,
-			ToolTipIcon.Info);
+		void HotkeyHandler(object? sender, HotkeyEventArgs eventArgs)
+		{
+			if (eventArgs.Name == hotkeyName)
+			{
+				convertCommand.Execute(sender);
+				eventArgs.Handled = true;
+			}
+		}
 	}
-
-	private static string TryConvertLine(string line)
-	{
-		var convertedLine = Converters
-			.Select(converter => converter.TryParseInput(line))
-			.FirstOrDefault(converted => converted != null);
-
-		return convertedLine ?? line;
-	}
-
-	private static string JoinLines(this IEnumerable<string> lines)
-	{
-		return string.Join(Environment.NewLine, lines);
-	}
-
-	private static readonly char[] LineSeparators = ['\r', '\n'];
-	private static readonly IReadOnlyCollection<IConverter> Converters = Services.Converters.Converters.Get();
-	private static readonly TimeSpan BalloonTimeout = TimeSpan.FromSeconds(5);
-
-	private const int MaxToolTipLength = 128;
 }
