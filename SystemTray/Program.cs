@@ -19,15 +19,17 @@ internal static class Program
 		{
 			Items =
 			{
-				new ToolStripMenuItem("Show form", null, (s, e) => { new Form1().Show(); }),
-				new ToolStripMenuItem("Exit", null, (s, e) => { Application.Exit(); }),
+				new ToolStripMenuItem("Convert clipboard content", null, ConvertClipboardContent),
+				new ToolStripMenuItem("Exit", null, (_, _) => { Application.Exit(); }),
 			}
 		};
 
 		icon.Visible = true;
 
-		Application.Run(new Form1());
+		Application.Run();
+	}
 
-		icon.Visible = false;
+	private static void ConvertClipboardContent(object? s, EventArgs e)
+	{
 	}
 }
