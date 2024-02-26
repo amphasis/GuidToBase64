@@ -12,7 +12,7 @@ internal static class Program
 	[STAThread]
 	public static void Main()
 	{
-		var hotkey = Keys.Z | Keys.Control | Keys.Alt | Keys.Shift;
+		const Keys hotkey = Keys.Control | Keys.Alt | Keys.Z;
 
 		// To customize application configuration such as set high DPI settings or default font,
 		// see https://aka.ms/applicationconfiguration.
