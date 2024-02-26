@@ -1,3 +1,5 @@
+using MongoConverter.Services.Converters;
+
 namespace MongoConverter.SystemTray;
 
 internal static class Program
@@ -6,7 +8,7 @@ internal static class Program
 	///  The main entry point for the application.
 	/// </summary>
 	[STAThread]
-	static void Main()
+	public static void Main()
 	{
 		// To customize application configuration such as set high DPI settings or default font,
 		// see https://aka.ms/applicationconfiguration.
@@ -29,7 +31,37 @@ internal static class Program
 		Application.Run();
 	}
 
-	private static void ConvertClipboardContent(object? s, EventArgs e)
+	private static void ConvertClipboardContent(object? sender, EventArgs eventArgs)
 	{
+		var clipboardText = TextCopy.ClipboardService.GetText();
+
+		if (clipboardText == null)
+		{
+			return;
+		}
+
+		var convertedText = clipboardText
+			.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries)
+			.Select(TryConvertLine)
+			.JoinLines();
+
+		TextCopy.ClipboardService.SetText(convertedText);
 	}
+
+	private static string TryConvertLine(string line)
+	{
+		var convertedLine = Converters
+			.Select(converter => converter.TryParseInput(line))
+			.FirstOrDefault(converted => converted != null);
+
+		return convertedLine ?? line;
+	}
+
+	private static string JoinLines(this IEnumerable<string> lines)
+	{
+		return string.Join(Environment.NewLine, lines);
+	}
+
+	private static readonly char[] LineSeparators = ['\r', '\n'];
+	private static readonly IReadOnlyCollection<IConverter> Converters = Services.Converters.Converters.Get();
 }
