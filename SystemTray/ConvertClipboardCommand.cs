@@ -71,7 +71,8 @@ internal sealed class ConvertClipboardCommand : ICommand
 			tipText: tipText,
 			ToolTipIcon.Info);
 
-		var joinedConvertedLines = new StringBuilder().AppendJoin(Environment.NewLine, convertedLines).ToString();
+		var joinedConvertedLines = JoinConvertedLines(usageCountByConverter, convertedLines);
+
 		TextCopy.ClipboardService.SetText(joinedConvertedLines);
 	}
 
@@ -118,6 +119,22 @@ internal sealed class ConvertClipboardCommand : ICommand
 			: $"{x.Value} lines {x.Key.InputTypeName} to {x.Key.OutputTypeName}");
 
 		return string.Join(Environment.NewLine, formattedStatisticsItems);
+	}
+
+	private static string JoinConvertedLines(
+		IReadOnlyDictionary<IConverter, int> usageCountByConverter,
+		IEnumerable<string> convertedLines)
+	{
+		var preferredSplitters = usageCountByConverter
+			.Where(countByConverter => countByConverter.Value > 0)
+			.Select(countByConverter => countByConverter.Key.PreferredSplitter)
+			.ToHashSet();
+
+		var splitter = preferredSplitters.Count == 1
+			? preferredSplitters.Single() + Environment.NewLine
+			: Environment.NewLine;
+
+		return new StringBuilder().AppendJoin(splitter, convertedLines).ToString();
 	}
 
 	private readonly NotifyIcon _notifyIcon;

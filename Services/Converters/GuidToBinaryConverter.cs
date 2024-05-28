@@ -6,6 +6,7 @@ namespace MongoConverter.Services.Converters
 	{
 		public string InputTypeName => "GUID";
 		public string OutputTypeName => "MongoDB binary";
+		public string PreferredSplitter => ",";
 
 		public string? TryParseInput(string input)
 		{

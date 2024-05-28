@@ -6,6 +6,7 @@ namespace MongoConverter.Services.Converters
 	{
 		public string InputTypeName => "Hex";
 		public string OutputTypeName => "MongoDB binary";
+		public string PreferredSplitter => ",";
 
 		public string? TryParseInput(string input)
 		{

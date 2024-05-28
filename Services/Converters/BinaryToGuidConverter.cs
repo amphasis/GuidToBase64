@@ -6,6 +6,8 @@ namespace MongoConverter.Services.Converters
 	{
 		public string InputTypeName => "Base64";
 		public string OutputTypeName => ".NET GUID";
+		public string PreferredSplitter => "";
+
 		public string? TryParseInput(string input)
 		{
 			try

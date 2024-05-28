@@ -4,6 +4,7 @@
 	{
 		string InputTypeName { get; }
 		string OutputTypeName { get; }
+		string PreferredSplitter { get; }
 		string? TryParseInput(string input);
 	}
 }
