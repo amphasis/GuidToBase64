@@ -32,7 +32,7 @@ internal sealed class ConvertClipboardCommand : ICommand
 		}
 
 		var usageCountByConverter = _converters.ToDictionary(x => x, _ => 0);
-		var convertedLines = new StringBuilder();
+		var convertedLines = new List<string>(sourceLines.Count);
 
 		foreach (var sourceLine in sourceLines)
 		{
@@ -42,11 +42,11 @@ internal sealed class ConvertClipboardCommand : ICommand
 
 			if (conversionResult.Line == null)
 			{
-				convertedLines.AppendLine(sourceLine);
+				convertedLines.Add(sourceLine);
 				continue;
 			}
 
-			convertedLines.AppendLine(conversionResult.Line);
+			convertedLines.Add(conversionResult.Line);
 			usageCountByConverter[conversionResult.Converter] += 1;
 		}
 
@@ -71,7 +71,8 @@ internal sealed class ConvertClipboardCommand : ICommand
 			tipText: tipText,
 			ToolTipIcon.Info);
 
-		TextCopy.ClipboardService.SetText(convertedLines.ToString());
+		var joinedConvertedLines = new StringBuilder().AppendJoin(Environment.NewLine, convertedLines).ToString();
+		TextCopy.ClipboardService.SetText(joinedConvertedLines);
 	}
 
 	private static List<string> SplitLines(string? source)
