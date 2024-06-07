@@ -1,10 +1,10 @@
-﻿namespace MongoConverter.Services.Converters
+﻿namespace MongoConverter.Services.Converters;
+
+public interface IConverter
 {
-	public interface IConverter
-	{
-		string InputTypeName { get; }
-		string OutputTypeName { get; }
-		string PreferredSplitter { get; }
-		string? TryParseInput(string input);
-	}
+	int Order { get; }
+	string InputTypeName { get; }
+	string OutputTypeName { get; }
+	string PreferredSplitter { get; }
+	string? TryParseInput(string input);
 }
