@@ -4,8 +4,16 @@ using MongoConverter.Services.Converters;
 
 namespace MongoConverter.SystemTray;
 
+/// <summary>
+/// Command that converts clipboard content using available converters and updates the clipboard with the converted result.
+/// </summary>
 internal sealed class ConvertClipboardCommand : ICommand
 {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ConvertClipboardCommand"/> class.
+	/// </summary>
+	/// <param name="notifyIcon">The notify icon used to display conversion results to the user.</param>
+	/// <param name="converters">The collection of converters available for clipboard content conversion.</param>
 	public ConvertClipboardCommand(
 		NotifyIcon notifyIcon,
 		IReadOnlyCollection<IConverter> converters)
@@ -14,13 +22,26 @@ internal sealed class ConvertClipboardCommand : ICommand
 		_converters = converters;
 	}
 
+	/// <summary>
+	/// Occurs when changes occur that affect whether or not the command should execute.
+	/// </summary>
 	public event EventHandler? CanExecuteChanged;
 
+	/// <summary>
+	/// Defines the method that determines whether the command can execute in its current state.
+	/// </summary>
+	/// <param name="parameter">Data used by the command. This parameter can be null.</param>
+	/// <returns>Always returns <c>true</c> as the command can always be executed.</returns>
 	public bool CanExecute(object? parameter)
 	{
 		return true;
 	}
 
+	/// <summary>
+	/// Executes the clipboard conversion command by reading clipboard content, converting it using available converters, 
+	/// and updating the clipboard with the converted result.
+	/// </summary>
+	/// <param name="parameter">Data used by the command. This parameter is not used.</param>
 	public void Execute(object? parameter)
 	{
 		var clipboardText = TextCopy.ClipboardService.GetText();
@@ -76,6 +97,11 @@ internal sealed class ConvertClipboardCommand : ICommand
 		TextCopy.ClipboardService.SetText(joinedConvertedLines);
 	}
 
+	/// <summary>
+	/// Splits the input string into individual lines.
+	/// </summary>
+	/// <param name="source">The source string to split into lines.</param>
+	/// <returns>A list of individual lines from the source string. Returns an empty list if the source is null.</returns>
 	private static List<string> SplitLines(string? source)
 	{
 		if (source == null)
@@ -101,6 +127,11 @@ internal sealed class ConvertClipboardCommand : ICommand
 		return lines;
 	}
 
+	/// <summary>
+	/// Generates a user-friendly tip text describing the conversion statistics.
+	/// </summary>
+	/// <param name="usageCountByConverter">Dictionary containing the usage count for each converter.</param>
+	/// <returns>A formatted string describing which conversions were performed and how many lines were affected.</returns>
 	private static string GetTipText(IReadOnlyDictionary<IConverter, int> usageCountByConverter)
 	{
 		var conversionStatistics = usageCountByConverter
@@ -121,6 +152,12 @@ internal sealed class ConvertClipboardCommand : ICommand
 		return string.Join(Environment.NewLine, formattedStatisticsItems);
 	}
 
+	/// <summary>
+	/// Joins the converted lines using the appropriate splitter based on the converters that were used.
+	/// </summary>
+	/// <param name="usageCountByConverter">Dictionary containing the usage count for each converter.</param>
+	/// <param name="convertedLines">The collection of converted lines to join.</param>
+	/// <returns>A single string containing all converted lines joined with the appropriate splitter.</returns>
 	private static string JoinConvertedLines(
 		IReadOnlyDictionary<IConverter, int> usageCountByConverter,
 		IEnumerable<string> convertedLines)
@@ -137,8 +174,18 @@ internal sealed class ConvertClipboardCommand : ICommand
 		return new StringBuilder().AppendJoin(splitter, convertedLines).ToString();
 	}
 
+	/// <summary>
+	/// The notify icon used to display conversion results to the user.
+	/// </summary>
 	private readonly NotifyIcon _notifyIcon;
+	
+	/// <summary>
+	/// The collection of converters available for clipboard content conversion.
+	/// </summary>
 	private readonly IReadOnlyCollection<IConverter> _converters;
 
+	/// <summary>
+	/// The duration for which balloon tips are displayed to the user.
+	/// </summary>
 	private static readonly TimeSpan BalloonTimeout = TimeSpan.FromSeconds(5);
 }

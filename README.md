@@ -1,5 +1,17 @@
 # GuidToBase64
-Helps with converting data in the clipboard for ease of use with MongoDB Compass. Conversion occurs using the hotkey Alt+Ctrl+Z, or from the context menu in the system tray. Supported conversion options:
+
+## Overview
+This utility provides convenient conversion between various representations of GUID and ObjectId values to formats suitable for use in MongoDB Compass and vice versa. The tool simplifies working with MongoDB data by automatically converting between different data formats commonly used in .NET applications and MongoDB queries.
+
+## Features
+- **Clipboard Integration**: Automatically processes clipboard content for seamless workflow
+- **Bidirectional Conversion**: Converts both to and from MongoDB Compass compatible formats
+- **Multiple Input Formats**: Supports various GUID and ObjectId representations
+- **System Tray Access**: Quick access through system tray context menu
+- **Hotkey Support**: Fast conversion using Alt+Ctrl+Z hotkey
+- **Batch Processing**: Handles collections of values for bulk operations
+
+The utility helps with converting data in the clipboard for ease of use with MongoDB Compass. Conversion occurs using the hotkey Alt+Ctrl+Z, or from the context menu in the system tray. Supported conversion options:
 ### GUID -> BinData
 
 <table>

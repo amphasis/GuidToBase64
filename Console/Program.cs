@@ -4,8 +4,17 @@ using MongoConverter.Services.Converters;
 
 namespace MongoConverter.Console
 {
+	/// <summary>
+	/// Main class for the data conversion console application.
+	/// Provides an interactive command-line interface for converting various data types.
+	/// </summary>
 	public static class Program
 	{
+		/// <summary>
+		/// Entry point for the converter console application.
+		/// Starts an interactive loop for data input and conversion with optional quiet mode.
+		/// </summary>
+		/// <param name="args">Command line arguments. Supports "-q" flag for quiet mode</param>
 		static void Main(string[] args)
 		{
 			var isQuietMode = args.Any(x => x == "-q");

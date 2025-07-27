@@ -4,10 +4,14 @@ using NHotkey.WindowsForms;
 
 namespace MongoConverter.SystemTray;
 
+/// <summary>
+/// Entry point class for the MongoDB Converter system tray application.
+/// </summary>
 internal static class Program
 {
 	/// <summary>
-	///  The main entry point for the application.
+	/// The main entry point for the application. Initializes the system tray icon, 
+	/// sets up the context menu, and configures the global hotkey for clipboard conversion.
 	/// </summary>
 	[STAThread]
 	public static void Main()
@@ -48,6 +52,11 @@ internal static class Program
 			HotkeyManager.Current.Remove(hotkeyName);
 		}
 
+		/// <summary>
+		/// Handles the global hotkey event for clipboard conversion.
+		/// </summary>
+		/// <param name="sender">The event sender.</param>
+		/// <param name="eventArgs">The hotkey event arguments containing information about the triggered hotkey.</param>
 		void HotkeyHandler(object? sender, HotkeyEventArgs eventArgs)
 		{
 			if (eventArgs.Name == hotkeyName)
